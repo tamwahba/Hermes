@@ -8,59 +8,49 @@
 #import "Keychain.h"
 
 BOOL KeychainSetItem(NSString* username, NSString* password) {
-  SecKeychainItemRef item = nil;
-  OSStatus result = SecKeychainFindGenericPassword(
-    NULL,
-    strlen(KEYCHAIN_SERVICE_NAME),
-    KEYCHAIN_SERVICE_NAME,
-    (UInt32)[username length],
-    [username UTF8String],
-    NULL,
-    NULL,
-    &item);
+  NSDictionary *query = @{
+    (__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
+    (__bridge id)kSecAttrService: @(KEYCHAIN_SERVICE_NAME),
+    (__bridge id)kSecAttrAccount: username
+  };
+
+  OSStatus result = SecItemCopyMatching((__bridge CFDictionaryRef)query, NULL);
 
   if (result == noErr) {
-    result = SecKeychainItemModifyContent(item, NULL, (UInt32)[password length],
-                                          [password UTF8String]);
+    NSDictionary *attributesToUpdate = @{
+      (__bridge id)kSecValueData: [password dataUsingEncoding:NSUTF8StringEncoding]
+    };
+    result = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)attributesToUpdate);
   } else {
-    result = SecKeychainAddGenericPassword(
-      NULL,
-      strlen(KEYCHAIN_SERVICE_NAME),
-      KEYCHAIN_SERVICE_NAME,
-      (UInt32)[username length],
-      [username UTF8String],
-      (UInt32)[password length],
-      [password UTF8String],
-      NULL);
+    NSDictionary *attributes = @{
+      (__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
+      (__bridge id)kSecAttrService: @(KEYCHAIN_SERVICE_NAME),
+      (__bridge id)kSecAttrAccount: username,
+      (__bridge id)kSecValueData: [password dataUsingEncoding:NSUTF8StringEncoding]
+    };
+    result = SecItemAdd((__bridge CFDictionaryRef)attributes, NULL);
   }
 
-  if (item) {
-    CFRelease(item);
-  }
   return result == noErr;
 }
 
 NSString *KeychainGetPassword(NSString* username) {
-  void *passwordData = NULL;
-  UInt32 length;
-  OSStatus result = SecKeychainFindGenericPassword(
-    NULL,
-    strlen(KEYCHAIN_SERVICE_NAME),
-    KEYCHAIN_SERVICE_NAME,
-    (UInt32)[username length],
-    [username UTF8String],
-    &length,
-    &passwordData,
-    NULL);
+  NSDictionary *query = @{
+    (__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
+    (__bridge id)kSecAttrService: @(KEYCHAIN_SERVICE_NAME),
+    (__bridge id)kSecAttrAccount: username,
+    (__bridge id)kSecReturnData: @YES
+  };
+
+  CFTypeRef passwordDataRef = NULL;
+  OSStatus result = SecItemCopyMatching((__bridge CFDictionaryRef)query, &passwordDataRef);
 
   if (result != noErr) {
     return nil;
   }
-  
-  NSString *password = [[NSString alloc] initWithBytes:passwordData
-                                           length:length
-                                         encoding:NSUTF8StringEncoding];
-  SecKeychainItemFreeContent(NULL, passwordData);
+
+  NSData *passwordData = (__bridge_transfer NSData *)passwordDataRef;
+  NSString *password = [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
 
   return password;
 }
