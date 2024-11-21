@@ -895,7 +895,6 @@ Gw
                 <outlet property="errorButton" destination="1807" id="1809"/>
                 <outlet property="errorLabel" destination="1263" id="1266"/>
                 <outlet property="errorView" destination="1251" id="1265"/>
-                <outlet property="growler" destination="1980" id="1981"/>
                 <outlet property="history" destination="1331" id="1507"/>
                 <outlet property="loadingIcon" destination="1231" id="1233"/>
                 <outlet property="loadingView" destination="1230" id="1232"/>
@@ -1012,7 +1011,6 @@ Gw
                 <outlet property="window" destination="1641" id="1753"/>
             </connections>
         </customObject>
-        <customObject id="1980" customClass="Growler"/>
         <customObject id="2007" customClass="Scrobbler"/>
         <customObject id="2136" customClass="NetworkConnection"/>
         <view id="1202" userLabel="Auth View">
@@ -1693,7 +1691,6 @@ DQ
                         <font key="font" metaFont="menu"/>
                         <menu key="menu" title="OtherViews" id="2290">
                             <items>
-                                <menuItem title="Notify with Growl" id="2291"/>
                                 <menuItem title="Notify with macOS" state="on" id="2292"/>
                             </items>
                         </menu>

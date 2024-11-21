@@ -61,7 +61,6 @@
 #define SORT_NAME_ASC 2
 #define SORT_NAME_DSC 3
 
-#define GROWL_TYPE_GROWL 0
 #define GROWL_TYPE_OSX   1
 
 @interface PreferencesController : NSObject <NSWindowDelegate> {
